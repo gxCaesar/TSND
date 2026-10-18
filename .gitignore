@@ -18,10 +18,3 @@ venv/
 /runs/
 /logs/
 /ESM_*.zip
-/figures/*.pdf
-/figures/source/*.pdf
-*.aux
-*.log
-*.fls
-*.fdb_latexmk
-*.synctex.gz

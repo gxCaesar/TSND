@@ -19,9 +19,7 @@ data:
   has_abstract: true
   per_page: 200
   mailto: your-email.com
-  max_papers: 15000            # Per domain-year row cap for a ~1-day single-GPU run. The oncology filter matches
-                               # 339,453 works over 2010-2024; this cap means a run ingests the cap or the
-                               # year's full result set, whichever is smaller. Raise it for a larger pull.
+  max_papers: 15000
   out_dir: data_mesh_onco
   works_format: parquet
   partition_by:
@@ -80,7 +78,7 @@ label:
   - 5
   breadth_channels:
   - venues
-  - institutions   # the CLI drops this channel (src/tsnd/cli.py); breadth is venues x subfields
+  - institutions
   - subfields
   positive_quantile: 0.9
   label_year_end: 2024
@@ -116,10 +114,7 @@ compute:
   workers: 16
   max_pull_jobs: 8
   poll_seconds: 5
-splits:   # NOT the split the runs use. The CLI derives train/test/label years from
-          # data.year_start, data.year_end and label.horizon. This block is read only by
-          # data/splits.py, which is off that path, and it uses validate_years where that
-          # module expects val_years. Kept for provenance; do not read it as the split.
+splits:
   train_years:
   - 2010
   - 2011

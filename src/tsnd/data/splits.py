@@ -28,7 +28,7 @@ class RollingSplit:
 
 
 def default_config() -> dict[str, Any]:
-    """Return the research-plan split defaults."""
+    """Return the default chronological dataset splits."""
     return {
         "data": {"year_end": 2024},
         "label": {"horizons": [2, 3, 5]},

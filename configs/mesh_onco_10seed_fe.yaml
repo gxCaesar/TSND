@@ -78,9 +78,6 @@ novelty:
   prior_proximity_conditioning: true
   degree_preserving_null: true
 label:
-  # The reported history-filtered result retains labels thresholded on the
-  # adjacent-year cohort; scripts/prepare_first_observed_labels.sh writes the
-  # filtered tables consumed by forecaster.label_dir below.
   candidate_rule: adjacent
   horizon: 3
   horizons:

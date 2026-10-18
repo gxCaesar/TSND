@@ -381,7 +381,7 @@ def _pool_axiom_table(
     focal_year: int,
     seed: int,
 ) -> dict[str, Any]:
-    """Run A1-A9 over the B9 density metrics on one focal sample. A5/A6 stay gated off."""
+    """Run A1-A9 over the B9 density metrics on one focal sample. A5/A6 are disabled in this entry point."""
     from tsnd.models.baselines.density_metrics import (
         FastTextLofMetric,
         RndMetric,
@@ -425,7 +425,7 @@ def _pool_axiom_table(
         "FastTextLOF": FastTextLofMetric(embedder),
     }
     if bool(_cfg_get(cfg, "axioms", "include_temporalized_baselines", default=False)):
-        # Temporalized density baselines (reviewer M1): the same D<=t cutoff TSND uses,
+        # Temporalized density baselines: the same D<=t cutoff TSND uses,
         # applied to each static density metric, so they satisfy A9 by construction while
         # still failing the other axioms and offering no decomposition. Default off so the
         # canonical axiom table is unchanged.
@@ -441,8 +441,8 @@ def _pool_axiom_table(
                        "average_pass_rate": report.average_pass_rate}
         logger.info("axioms A1-A9 %s: avg pass %.3f", name, report.average_pass_rate)
     if bool(_cfg_get(cfg, "axioms", "run_llm_judge", default=False)):
-        logger.warning("axioms: B10 LLM judge requested but is gated off (needs an API backend; "
-                       "see docs/AXIOMS.md). Skipping.")
+        logger.warning("axioms: B10 LLM judge requires an optional API backend; "
+                       "see README.md. Skipping.")
     return {"focal_domain": focal_domain, "focal_year": int(focal_year), "metrics": table}
 
 

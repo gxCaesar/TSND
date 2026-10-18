@@ -1,0 +1,165 @@
+run_tag: debug
+seed_list: [0, 1]
+
+data:
+  source: openalex_api
+  use_snapshot: false
+  api_key_env: OPENALEX_API_KEY
+  openalex_api_key_env: OPENALEX_API_KEY
+  semantic_scholar_api_key_env: SEMANTIC_SCHOLAR_API_KEY
+  # domain dicts carry both key spellings so ingest (name/subfield_search) and the
+  # base-style readers (id/openalex_topic_search) both resolve the AI slice.
+  domains:
+    - id: ai
+      name: ai
+      subfield_search: "artificial intelligence"
+      openalex_topic_search: "artificial intelligence"
+  subfield_search: "artificial intelligence"
+  year_start: 2015
+  year_end: 2022
+  has_abstract: true
+  per_page: 200
+  max_papers: 8000
+  out_dir: data_debug
+  mailto: null
+  abstract_backfill: null
+
+terms:
+  min_df_per_year: 10
+  top_terms: 8000
+  use_spacy_nounchunks: false   # n-gram extractor for a fast smoke
+  use_rake: false
+  include_openalex_topics: true
+  include_extracted_terms: true
+  lowercase: true
+  lemmatize: true
+
+embed:
+  model: sgns
+  sgns_dim: 100
+  window: 5
+  min_count: 10
+  train_window_years: 2
+  epochs: 5
+  dtype: float32
+  embedding_format: npz
+
+align:
+  k_neighbors: 25
+  tau_sweep: [0.4, 0.5, 0.6]
+  ref_year: 2022
+  anchor_selection: graph_stability
+  fallback_alignment: cade
+  method: procrustes
+  min_anchors: 50
+
+novelty:
+  delta_relabel: 0.15
+  n_permutations: 50
+  prox_bins: 10
+  rc_model: degree_residualized_prior_proximity
+
+label:
+  horizon: 2
+  horizons: [2]
+  breadth_channels: [venues, subfields]
+  positive_quantile: 0.90
+  min_positives_per_cell: 100
+
+a10:
+  n_injections: 30
+  n_placebo: 30
+  pass_threshold: 0.8
+  iterate_floor: 0.6
+  noise_band_quantile: 0.95
+
+axioms:
+  embedder: hashing        # CPU smoke embedder (no GPU needed for the debug axiom run)
+  run_pool_axioms: true
+  run_llm_judge: false
+  n_focal: 30
+  base_pool_size: 400
+  distant_pool_size: 0     # debug has a single domain, so A4 (unrelatedness) is ineligible
+  future_pool_size: 200
+
+baseline_specter:
+  model: sentence-transformers/allenai-specter
+  batch_size: 256
+  device: cuda
+  embedding_dim: 768
+
+baseline_bge:
+  model: BAAI/bge-m3
+  batch_size: 128
+  device: cuda
+
+compute:
+  gpu_index: 3
+  gpu_hour_budget: 24
+  n_process: 16
+  workers: 8
+  max_pull_jobs: 8
+  poll_seconds: 5
+
+splits:   # NOT the split the runs use. The CLI derives train/test/label years from
+          # data.year_start, data.year_end and label.horizon. This block is read only by
+          # data/splits.py, which is off that path, and it uses validate_years where that
+          # module expects val_years. Kept for provenance; do not read it as the split.
+  train_years: [2016, 2017, 2018, 2019]
+  validate_years: [2019]
+  test_years: [2020]
+  case_study_years: [2021, 2022]
+
+features:
+  include_le: true
+  include_ns: true
+  include_rc: true
+  include_controls: true
+
+forecast:
+  estimator: lightgbm
+  calibration: isotonic
+  survival_variant: logistic_hazard
+  label_column: label
+  eval_horizons: [2]
+
+forecaster:
+  baselines: [b2, b3, b4, b6, b7, b8]   # CPU baselines exercised in the debug merge (b5 SPECTER added once the specter stage runs)
+  feature_groups:
+    tsnd: [kind_pair, le, rc, prox, deg, n_papers]   # our decomposition + structural controls
+    b1: [kind_pair, deg, n_papers]                    # trivial-strong control
+  label_column: label
+  calibration_fraction: 0.2
+  min_calibration_samples: 20
+  min_cohort_samples: 10
+  bootstrap_samples: 300
+  ci_alpha: 0.05
+  ece_bins: 15
+  precision_k: 100
+  use_survival_model: false
+  lightgbm_params:
+    n_estimators: 300
+    learning_rate: 0.05
+    num_leaves: 31
+    subsample: 0.8
+    colsample_bytree: 0.8
+    verbose: -1
+
+evaluation:
+  primary_metric: pr_auc
+  auxiliary_metrics: [roc_auc, brier]
+  bootstrap_samples: 300
+  statistical_test: paired_wilcoxon
+  key_column: key
+  merge_columns: [key]
+  decomposition_columns: {le: le, ns: ns, rc: rc}
+  control_columns: [deg, n_papers]
+  baseline_columns: []
+
+artifacts:
+  out_dir: artifacts_debug   # preprocess terms dir; matches embed/align/cli artifacts_{run_tag}
+  metrics_file: metrics.json
+
+logging:
+  pull_dir: logs/pull
+  run_dir: logs/runs

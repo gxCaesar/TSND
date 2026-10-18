@@ -1,0 +1,224 @@
+run_tag: full
+seed_list: [0, 1, 2]          # Full run uses three SGNS seeds.
+
+data:
+  # Subfield-filtered OpenAlex API pull (NOT the snapshot). The full snapshot is ~330GB
+  # compressed and the streaming reader needs a local dump we do not download; the API path
+  # was validated end-to-end in the pilot and keeps the working set under the 50GB cap.
+  source: openalex_api
+  use_snapshot: false
+  api_key_env: OPENALEX_API_KEY
+  openalex_api_key_env: OPENALEX_API_KEY
+  semantic_scholar_api_key_env: SEMANTIC_SCHOLAR_API_KEY
+  # Three DISTINCT OpenAlex subfields (resolved + counted via the API on 2026-06-13).
+  # Distinct fields (CS / Physics / Engineering) give a clean domain-transfer contrast for
+  # Section 5. subfield_id is pinned for reproducibility; subfield_search documents how it
+  # was resolved. Per-subfield abstract-bearing counts (2010-2024): AI 1.60M, condensed
+  # matter 0.17M, biomedical engineering 1.26M. The plan's "quantum/materials" maps to
+  # condensed matter physics and "biomedical AI" to biomedical engineering.
+  domains:
+    - name: ai
+      subfield_id: "1702"          # Artificial Intelligence (Computer Science)
+      subfield_search: "artificial intelligence"
+    - name: condensed_matter
+      subfield_id: "3104"          # Condensed Matter Physics
+      subfield_search: "condensed matter physics"
+    - name: biomedical_eng
+      subfield_id: "2204"          # Biomedical Engineering
+      subfield_search: "biomedical engineering"
+  subfield_search: null        # Mirrored pilot key; replaced by the multi-domain list above.
+  year_start: 2010
+  year_end: 2024               # Labels are only evaluated where t+h is closed by 2024.
+  has_abstract: true
+  per_page: 200                # OpenAlex API maximum page size.
+  mailto: your-email.com  # OpenAlex polite-pool email (no API key required for the free pool).
+  max_papers: 15000            # Per domain-year cap (~3 domains x 15 years x 15k ~= 675k total) for a ~1-day single-GPU run. Raise it for the fully faithful ~3M-paper run (multi-day); null is not accepted.
+  out_dir: data                # Relative output root for parquet works and derived artifacts.
+  works_format: parquet        # Cross-module interface: one works parquet per domain/year.
+  partition_by: [domain, year]
+  abstract_backfill: semantic_scholar
+  allow_future_leakage: false  # A9 guard; only ABL-8 may flip this.
+
+terms:
+  min_df_per_year: 20          # m_min from the full research plan.
+  top_terms: 50000             # Full-run cap; pilot used 8000 for the single-domain slice.
+  use_spacy_nounchunks: true   # Required noun-chunk extractor for full TSND.
+  use_rake: true
+  include_openalex_topics: true
+  include_extracted_terms: true
+  lowercase: true
+  lemmatize: true
+  spacy_n_process: 16          # Multiprocess noun-chunk extraction; the single-process default is the >1M-abstract bottleneck.
+  spacy_batch_size: 2000
+  spacy_disable: ["ner"]       # noun_chunks needs the parser; only NER is safe to drop.
+  max_units_per_paper: 40
+
+embed:
+  model: sgns
+  sgns_dim: 200                # Full-run SGNS dimension d.
+  window: 5
+  min_count: 20
+  train_window_years: 3        # D_{t-2..t}, matching the plan.
+  epochs: 5
+  dtype: float32               # Cross-module interface: embedding mat is float32.
+  embedding_format: npz        # Cross-module interface: arrays units(object) + mat(float32).
+
+align:
+  k_neighbors: 50              # Graph-neighborhood size for stable-anchor Jaccard.
+  tau_sweep: [0.5, 0.6, 0.7]
+  ref_year: 2024               # Reference space for chained full-run alignments.
+  anchor_selection: graph_stability
+  fallback_alignment: cade
+  min_anchors: 240             # Observed stable-anchor count at tau=0.6 on the pooled multi-domain
+                               # graph is 249-392 (>dim=200), well above the pilot's working 50.
+                               # The risk-table's 500 was over-conservative and skipped every
+                               # boundary; 240 accepts all real boundaries while still gating
+                               # genuinely degenerate (<dim) cases. CADE fallback is not ported.
+
+novelty:
+  delta_relabel: 0.15
+  n_permutations: 200          # Full-run permutation null size.
+  prox_bins: 10
+  rc_model: degree_residualized_prior_proximity
+  prior_proximity_conditioning: true
+  degree_preserving_null: true
+
+label:
+  horizon: 3                   # Primary metric is h=3.
+  horizons: [2, 3, 5]
+  breadth_channels: [venues, institutions, subfields]
+  positive_quantile: 0.90      # Top-decile uptake label.
+  label_year_end: 2024
+  min_positives_per_cell: 200  # Gate from the risk table.
+
+a10:
+  n_injections: 100
+  n_placebo: 100
+  pass_threshold: 0.8
+  iterate_floor: 0.6
+  noise_band_quantile: 0.95
+
+axioms:
+  embedder: bge            # BGE-M3 for the B9 density axiom metrics (needs GPU)
+  run_pool_axioms: true
+  run_llm_judge: false     # B10 LLM judge gated off (needs an API backend; see docs/AXIOMS.md)
+  n_focal: 100
+  base_pool_size: 1500
+  distant_pool_size: 1000
+  future_pool_size: 500
+  # focal_domain defaults to the first data.domains entry; focal_year defaults to the test boundary year.
+
+baseline_specter:
+  model: allenai/specter2_base # SPECTER2 base model id from the plan.
+  adapter: allenai/specter2    # SPECTER2 proximity adapter from the plan.
+  batch_size: 256
+  device: cuda
+  embedding_dim: 768           # Estimate from plan; verified at runtime by the embedder.
+
+baseline_bge:
+  model: BAAI/bge-m3           # BGE-M3 for Axiomatic Benchmark-style metrics.
+  batch_size: 16               # BGE-M3 long-seq attention OOMs at 128 on a 46GB L20; 16 is safe.
+  device: cuda
+
+compute:
+  gpu_index: 0
+  gpu_hour_budget: 190         # Upper end of the plan's A100-hour estimate.
+  n_process: 32
+  workers: 16
+  max_pull_jobs: 8             # Bounded concurrent OpenAlex partitions.
+  poll_seconds: 5
+
+splits:   # NOT the split the runs use. The CLI derives train/test/label years from
+          # data.year_start, data.year_end and label.horizon. This block is read only by
+          # data/splits.py, which is off that path, and it uses validate_years where that
+          # module expects val_years. Kept for provenance; do not read it as the split.
+  train_years: [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017]
+  validate_years: [2018, 2019]
+  test_years: [2020, 2021, 2022]
+  case_study_years: [2023, 2024]
+
+features:
+  include_le: true
+  include_ns: true
+  include_rc: true
+  include_controls: true
+  include_citation_history: true
+  include_degree_growth: true
+  include_semantic_decomposition: true
+
+forecast:
+  estimator: lightgbm
+  calibration: isotonic
+  survival_variant: logistic_hazard
+  eval_horizons: [2, 3, 5]
+
+# The forecaster reads this `forecaster` section (validated end-to-end on the debug slice).
+# feature_groups lists the minimal fallback columns. The cli forecast stage overrides
+# this fallback from the `baselines` list through tsnd.models.baseline_registry,
+# which builds and merges B2-B8 by front key. B9/B10 belong to the axiom stage.
+forecaster:
+  # The cli forecast stage OVERRIDES feature_groups from this `baselines` list via
+  # tsnd.models.baseline_registry.forecast_feature_groups: tsnd + b1 are always present,
+  # and each listed baseline contributes its own feature columns merged by `key`. The
+  # feature_groups below is the minimal fallback used only if `baselines` is absent.
+  # b5 (SPECTER2) requires the `specter` precompute stage; add it once those npz exist.
+  # b9/b10 are novelty METRICS evaluated in the axioms stage, not forecast feature groups.
+  baselines: [b2, b3, b4, b5, b6, b7, b8]
+  feature_groups:
+    tsnd: [kind_pair, le, rc, prox, deg, n_papers]
+    b1: [kind_pair, deg, n_papers]
+  label_column: label
+  calibration_fraction: 0.2
+  min_calibration_samples: 20
+  min_cohort_samples: 10
+  bootstrap_samples: 1000
+  ci_alpha: 0.05
+  ece_bins: 15
+  precision_k: 100
+  use_survival_model: false
+  lightgbm_params:
+    n_estimators: 300
+    learning_rate: 0.05
+    num_leaves: 31
+    subsample: 0.8
+    colsample_bytree: 0.8
+    verbose: -1
+  combined_groups:
+    - name: struct_b2b7
+      members: [b2, b7]
+    - name: tsnd_b2b7
+      members: [tsnd, b2, b7]
+    - name: tsnd_b8
+      members: [tsnd, b8]
+    - name: struct_all
+      members: [b2, b7, b8]
+    - name: tsnd_struct_all
+      members: [tsnd, b2, b7, b8]
+  paired_comparisons:
+    - baseline: struct_b2b7
+      augmented: tsnd_b2b7
+    - baseline: b8
+      augmented: tsnd_b8
+    - baseline: struct_all
+      augmented: tsnd_struct_all
+
+evaluation:
+  primary_metric: pr_auc
+  auxiliary_metrics: [roc_auc, precision_at_100, brier, ece_15bin]
+  bootstrap_samples: 1000
+  statistical_test: paired_wilcoxon
+  domain_transfer: true
+  axiom_suite: [a1_a8, a9_no_future_leakage, a10_decomposition_identifiability]
+
+artifacts:
+  out_dir: artifacts_full      # preprocess terms dir; unify with embed/align/cli artifacts_{run_tag}
+  works_per_year_format: parquet
+  embeddings_format: npz
+  embeddings_arrays: [units, mat]
+  graph_format: pkl
+  graph_keys: [vocab, uidx, unit_df, paper_units, edges, n_papers]
+  metrics_file: metrics.json
+
+logging:
+  pull_dir: logs/pull
+  run_dir: logs/runs

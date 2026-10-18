@@ -1,0 +1,28 @@
+% Vector composition of the two original input-scope panels and original pipeline.
+% The native artwork and typography remain in fig1_motivation.tikz and fig2_pipeline.tikz.
+% Rebuild with: python3 compose_overview.py
+\documentclass[10pt,border=0pt]{standalone}
+\pdfsuppressptexinfo=15
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{graphicx}
+\usepackage{tikz}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  % Fixed final manuscript geometry. All included artwork remains vector PDF.
+  \path[use as bounding box] (0,0) rectangle (170,-88.5);
+  \begin{pgfinterruptboundingbox}
+    % Split at y=54 bp in the original 203.895 x 108.409 bp page.
+    % The split lies entirely in the original white inter-panel gap.
+    \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (0,-0.4)
+      {\includegraphics[width=81.5mm,trim=0bp 54.409bp 0bp 0bp,clip]{fig1_motivation.pdf}};
+    \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (88.5,-0.4)
+      {\includegraphics[width=81.5mm,trim=0bp 0bp 0bp 54bp,clip]{fig1_motivation.pdf}};
+    \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (0,-25.5)
+      {\includegraphics[width=170mm]{fig2_pipeline.pdf}};
+    % The original component band has names, not separate panel letters.
+    \node[anchor=north west,inner sep=0pt,outer sep=0pt,
+          font=\fontsize{9}{10.8}\selectfont\bfseries] at (0,-26.3) {(c)};
+  \end{pgfinterruptboundingbox}
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,49 @@
+% Editable native schematic; units and applicability are defined in the manuscript.
+\documentclass[10pt,border=0pt]{standalone}
+\pdfsuppressptexinfo=15
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,decorations.pathreplacing,calc,fit,backgrounds}
+
+\definecolor{oiblue}{HTML}{4C72B0}
+\definecolor{oiorange}{HTML}{DD8452}
+\definecolor{oigreen}{HTML}{55A868}
+\definecolor{oigray}{HTML}{8C8C8C}
+\definecolor{oisky}{HTML}{64B5CD}
+
+\begin{document}
+\begin{tikzpicture}[
+		font=\small,
+		% At the 81.5 mm insertion width, match the pipeline's 0.75 pt shafts and 3 pt tips.
+		score/.style={-{Stealth[length=2.65pt,width=2.08pt]}, line width=0.66pt,
+				line cap=round, line join=round},
+		blk/.style={draw=#1!75, fill=#1!10, rounded corners=2pt, line width=0.8pt,
+					minimum height=15pt, minimum width=3.35cm, align=center, font=\small},
+		badge/.style={draw=#1!70, fill=#1!7, rounded corners=2pt, line width=0.7pt,
+					  font=\small, inner xsep=4pt, inner ysep=2pt, text=#1!55!black},
+		lab/.style={font=\small, text=black!70, anchor=west},
+	]
+	\node[anchor=west, font=\small\bfseries] at (0,2.62) {(a) Full-pool metric};
+	\node[blk=oiblue]   (pa) at (1.80,2.05) {past $D_{\le t}$};
+	\node[blk=oiorange] (fa) at (5.45,2.05) {future $D_{>t}$};
+	\draw[dashed, black!45, line width=0.6pt] (3.62,1.62) -- (3.62,2.40);
+	\draw[score, oiorange!80!black] (0.13,1.50) -- (7.15,1.50);
+	\node[lab, text=oiorange!58!black] at (0.13,1.22) {scores against the whole corpus};
+	\node[badge=oiorange, anchor=east] at (7.20,1.22) {no date bound};
+
+	\node[anchor=west, font=\small\bfseries] at (0,0.72) {(b) Date-bounded metric};
+	\node[blk=oiblue] (pb) at (1.80,0.15) {past $D_{\le t}$};
+	\node[blk=oigray, draw=black!45, fill=white, dashed] (fb) at (5.45,0.15)
+		{\textcolor{black!45}{future $D_{>t}$}};
+	\draw[dashed, black!45, line width=0.6pt] (3.62,-0.28) -- (3.62,0.50);
+	\draw[score, oiblue!85!black] (0.13,-0.40) -- (3.62,-0.40);
+	\draw[score, black!45, dash pattern=on 1.8pt off 1.2pt] (3.70,-0.40) -- (7.15,-0.40);
+	\node[lab, text=oiblue!62!black] at (0.13,-0.68) {scores against $D_{\le t}$ only};
+	\node[badge=oiblue, anchor=east] at (7.20,-0.68) {dated inputs only};
+	\end{tikzpicture}
+\end{document}

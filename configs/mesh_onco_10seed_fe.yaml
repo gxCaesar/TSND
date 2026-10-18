@@ -1,0 +1,239 @@
+run_tag: mesh_onco_10seed_fe
+seed_list:
+- 0
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+data:
+  source: openalex_api
+  use_snapshot: false
+  api_key_env: OPENALEX_API_KEY
+  openalex_api_key_env: OPENALEX_API_KEY
+  semantic_scholar_api_key_env: SEMANTIC_SCHOLAR_API_KEY
+  domains:
+  - name: oncology
+    subfield_id: '2730'
+    subfield_search: oncology
+  subfield_search: null
+  year_start: 2010
+  year_end: 2019
+  has_abstract: true
+  per_page: 200
+  mailto: your-email.com
+  max_papers: 15000
+  out_dir: data_mesh_onco
+  works_format: parquet
+  partition_by:
+  - domain
+  - year
+  abstract_backfill: null
+  allow_future_leakage: false
+  require_pmid: true
+terms:
+  min_df_per_year: 20
+  top_terms: 50000
+  use_spacy_nounchunks: false
+  use_rake: true
+  include_openalex_topics: true
+  include_extracted_terms: true
+  lowercase: true
+  lemmatize: true
+  spacy_n_process: 16
+  spacy_batch_size: 2000
+  spacy_disable:
+  - ner
+  max_units_per_paper: 40
+  unit_source: mesh
+  unknown_df_rank: 1000000000
+embed:
+  model: sgns
+  sgns_dim: 100
+  window: 5
+  min_count: 20
+  train_window_years: 3
+  epochs: 5
+  dtype: float32
+  embedding_format: npz
+align:
+  k_neighbors: 50
+  tau_sweep:
+  - 0.5
+  - 0.6
+  - 0.7
+  ref_year: 2024
+  anchor_selection: graph_stability
+  fallback_alignment: cade
+  min_anchors: 50
+novelty:
+  delta_relabel: 0.15
+  n_permutations: 200
+  prox_bins: 10
+  rc_model: degree_residualized_prior_proximity
+  prior_proximity_conditioning: true
+  degree_preserving_null: true
+label:
+  # The reported history-filtered result retains labels thresholded on the
+  # adjacent-year cohort; scripts/prepare_first_observed_labels.sh writes the
+  # filtered tables consumed by forecaster.label_dir below.
+  candidate_rule: adjacent
+  horizon: 3
+  horizons:
+  - 2
+  - 3
+  - 5
+  breadth_channels:
+  - venues
+  - institutions
+  - subfields
+  positive_quantile: 0.9
+  label_year_end: 2024
+  min_positives_per_cell: 200
+a10:
+  n_injections: 100
+  n_placebo: 100
+  pass_threshold: 0.8
+  iterate_floor: 0.6
+  noise_band_quantile: 0.95
+axioms:
+  embedder: bge
+  run_pool_axioms: false
+  run_llm_judge: false
+  n_focal: 100
+  base_pool_size: 1500
+  distant_pool_size: 1000
+  future_pool_size: 500
+baseline_specter:
+  model: allenai/specter2_base
+  adapter: allenai/specter2
+  batch_size: 256
+  device: cuda
+  embedding_dim: 768
+baseline_bge:
+  model: BAAI/bge-m3
+  batch_size: 16
+  device: cuda
+compute:
+  gpu_index: 0
+  gpu_hour_budget: 190
+  n_process: 32
+  workers: 16
+  max_pull_jobs: 8
+  poll_seconds: 5
+splits:
+  train_years:
+  - 2010
+  - 2011
+  - 2012
+  - 2013
+  - 2014
+  - 2015
+  - 2016
+  - 2017
+  validate_years:
+  - 2018
+  - 2019
+  test_years:
+  - 2020
+  - 2021
+  - 2022
+  case_study_years:
+  - 2023
+  - 2024
+features:
+  include_le: true
+  include_ns: true
+  include_rc: true
+  include_controls: true
+  include_citation_history: true
+  include_degree_growth: true
+  include_semantic_decomposition: true
+forecast:
+  estimator: lightgbm
+  calibration: isotonic
+  survival_variant: logistic_hazard
+  eval_horizons:
+  - 2
+  - 3
+  - 5
+forecaster:
+  label_dir: artifacts_mesh_onco/e1_firstever
+  baselines:
+  - b2
+  - b7
+  feature_groups:
+    tsnd:
+    - kind_pair
+    - le
+    - rc
+    - prox
+    - deg
+    - n_papers
+    b1:
+    - kind_pair
+    - deg
+    - n_papers
+  label_column: label
+  calibration_fraction: 0.2
+  min_calibration_samples: 20
+  min_cohort_samples: 10
+  bootstrap_samples: 500
+  ci_alpha: 0.05
+  ece_bins: 15
+  precision_k: 100
+  use_survival_model: false
+  lightgbm_params:
+    n_estimators: 300
+    learning_rate: 0.05
+    num_leaves: 31
+    subsample: 0.8
+    colsample_bytree: 0.8
+    verbose: -1
+  combined_groups:
+  - name: struct_b2b7
+    members:
+    - b2
+    - b7
+  - name: tsnd_b2b7
+    members:
+    - tsnd
+    - b2
+    - b7
+evaluation:
+  primary_metric: pr_auc
+  auxiliary_metrics:
+  - roc_auc
+  - precision_at_100
+  - brier
+  - ece_15bin
+  bootstrap_samples: 500
+  statistical_test: paired_wilcoxon
+  domain_transfer: true
+  axiom_suite:
+  - a1_a8
+  - a9_no_future_leakage
+  - a10_decomposition_identifiability
+artifacts:
+  out_dir: artifacts_mesh_onco
+  works_per_year_format: parquet
+  embeddings_format: npz
+  embeddings_arrays:
+  - units
+  - mat
+  graph_format: pkl
+  graph_keys:
+  - vocab
+  - uidx
+  - unit_df
+  - paper_units
+  - edges
+  - n_papers
+  metrics_file: metrics.json
+logging:
+  pull_dir: logs/pull
+  run_dir: logs/runs

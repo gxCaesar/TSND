@@ -1,0 +1,179 @@
+% Editable native schematic; units and applicability are defined in the manuscript.
+\documentclass[10pt,border=0pt]{standalone}
+\pdfsuppressptexinfo=15
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,decorations.pathreplacing,calc,fit,backgrounds}
+
+\definecolor{oiblue}{HTML}{4C72B0}
+\definecolor{oiorange}{HTML}{DD8452}
+\definecolor{oigreen}{HTML}{55A868}
+\definecolor{oigray}{HTML}{8C8C8C}
+\definecolor{oisky}{HTML}{64B5CD}
+
+\begin{document}
+\begin{tikzpicture}[
+    xscale=0.90,
+    font=\small,
+    box/.style={draw=#1!75, fill=#1!7, rounded corners=3pt, line width=0.9pt},
+    head/.style={font=\bfseries\small, text=#1!62!black, align=center},
+    sub/.style={font=\small, align=center, text=black!72},
+    card/.style={draw=#1!80, fill=#1!8, rounded corners=3pt, line width=0.9pt,
+                 align=center, inner xsep=5pt, inner ysep=3pt, text width=4.85cm},
+    % Common connector grammar at the final 170 mm insertion width.
+    directed/.style={-{Stealth[length=3pt,width=2.35pt]}, line width=0.75pt,
+                     line cap=round, line join=round},
+    flow/.style={directed, oiblue!85!black},
+    softflow/.style={directed, oigray!95!black, dash pattern=on 1.8pt off 1.2pt},
+    iconflow/.style={-{Stealth[length=2.6pt,width=2pt]}, line width=0.65pt,
+                     line cap=round, line join=round},
+    branch/.style={directed, oigreen!70},
+    gnode/.style={circle, draw=oiblue!80, fill=white, line width=0.55pt, inner sep=0pt,
+                  minimum size=3.4pt},
+    note/.style={font=\small, align=center, text=black!75},
+  ]
+
+
+  \begin{scope}[shift={(1.63,0)}]
+    \node[head=oiblue] (h1) at (0,0.62) {Annual snapshot};
+    \node[sub] (u1a) at (0,0.32) {corpus $D_t$};
+    % Preserve the lower icon placement in the author's original PDF.
+    \begin{scope}[yshift=-3.86bp]
+    \foreach \i in {2,1,0}{
+      \draw[fill=white, draw=oiblue!60, line width=0.5pt, rounded corners=0.5pt]
+        (-0.80+0.05*\i, -0.32+0.05*\i) rectangle (-0.44+0.05*\i, 0.12+0.05*\i);}
+    \draw[iconflow, oiblue!85] (-0.28,-0.10) -- (-0.08,-0.10);
+    \foreach \r in {0,1}{\foreach \c in {0,1,2}{
+        \node[draw=oiblue!70, fill=oiblue!12, line width=0.45pt, rounded corners=0.4pt,
+              minimum width=0.24cm, minimum height=0.16cm, inner sep=0pt] (uu\r\c)
+          at (0.14+0.28*\c, 0.02-0.24*\r) {};}}
+    \end{scope}
+    \node[sub] (u1c) at (0,-0.90) {\mbox{concept units}\\\mbox{$c_1,\dots,c_k$}};
+    \begin{pgfonlayer}{background}
+    \node[box=oiblue, fit=(h1)(u1a)(u1c)(uu00)(uu12), inner sep=4pt] (s1) {};
+    \end{pgfonlayer}
+  \end{scope}
+
+  \begin{scope}[shift={(5.20,0)}]
+    \node[head=oiblue] (h2) at (0,0.62) {Concept graph $G_t$};
+    \node[sub] (u2a) at (0,0.32) {co-occurrence in $D_t$};
+    \node[gnode] (g1) at (-0.82,-0.02) {};
+    \node[gnode] (g2) at (-0.30, 0.08) {};
+    \node[gnode, minimum size=4.8pt, fill=oiblue!30] (g3) at (0.10,-0.22) {};
+    \node[gnode] (g4) at (0.80, 0.02) {};
+    \node[gnode] (g5) at (-0.52,-0.52) {};
+    \node[gnode] (g6) at (0.56,-0.54) {};
+    \draw[oiblue!70, line width=1.5pt] (g2) -- (g3);
+    \draw[oiblue!60, line width=0.9pt] (g1) -- (g2);
+    \draw[oiblue!45, line width=0.6pt] (g3) -- (g4);
+    \draw[oiblue!45, line width=0.6pt] (g5) -- (g3);
+    \draw[oiblue!45, line width=0.6pt] (g3) -- (g6);
+    \draw[oigreen!85, line width=1.0pt, dashed] (g5) -- (g6);
+    \node[sub] (u2c) at (0,-0.86) {\mbox{entry and survival}\\\mbox{classes}};
+    \begin{pgfonlayer}{background}
+    \node[box=oiblue, fit=(h2)(u2a)(u2c)(g1)(g4)(g5)(g6), inner sep=4pt] (s2) {};
+    \end{pgfonlayer}
+  \end{scope}
+
+  \begin{scope}[shift={(9.02,0)}]
+    \node[head=oisky] (h3) at (0,0.62) {Temporal alignment};
+    \node[sub] (u3a) at (0,0.32) {trailing 3-year SGNS};
+    \draw[fill=black!5, draw=black!25, line width=0.4pt, rounded corners=2.5pt]
+      (-1.14,-0.74) rectangle (-0.18,-0.06);
+    \draw[fill=black!5, draw=black!25, line width=0.4pt, rounded corners=2.5pt]
+      (0.20,-0.74) rectangle (1.16,-0.06);
+    \node[font=\small, text=black!65] (v1) at (-0.66,-0.20) {$V_t$};
+    \node[font=\small, text=black!65] (v2) at (0.68,-0.20) {$V_{t-1}$};
+    \foreach \p/\q in {-0.96/-0.42, -0.44/-0.62, -0.78/-0.64}{
+      \node[circle, fill=oisky!85, inner sep=0pt, minimum size=2.5pt] at (\p,\q) {};}
+    \foreach \p/\q in {0.38/-0.42, 0.90/-0.62, 0.56/-0.64}{
+      \node[circle, fill=oisky!85, inner sep=0pt, minimum size=2.5pt] at (\p,\q) {};}
+    \foreach \p/\q in {-0.28/-0.66, -1.02/-0.66}{
+      \node[circle, fill=black!30, inner sep=0pt, minimum size=2.1pt] at (\p,\q) {};}
+    \foreach \p/\q in {1.06/-0.66, 0.26/-0.66}{
+      \node[circle, fill=black!30, inner sep=0pt, minimum size=2.1pt] at (\p,\q) {};}
+    \draw[black!35, line width=0.35pt, dotted] (-0.96,-0.42) -- (0.38,-0.42);
+    \draw[black!35, line width=0.35pt, dotted] (-0.44,-0.62) -- (0.90,-0.62);
+    \draw[iconflow, oisky!90!black] (-0.13,-0.40) -- (0.15,-0.40);
+    \node[font=\small, text=oisky!55!black] at (0.01,-0.22) {$W_t$};
+    \node[sub] (u3c) at (0,-1.20) {\mbox{graph-stable anchors,}\\\mbox{then Procrustes}};
+    \begin{pgfonlayer}{background}
+    \node[box=oisky, fit=(h3)(u3a)(u3c)(v1)(v2), inner sep=4pt] (s3) {};
+    \end{pgfonlayer}
+  \end{scope}
+
+  \begin{scope}[shift={(13.07,0)}]
+    \node[head=oigreen] (h4) at (0,0.62) {Typed TSND profile};
+    \node[sub] (u4a) at (0,0.32) {applicability by type};
+    \node[draw=oiblue!85, fill=oiblue!14, rounded corners=2pt, line width=0.6pt,
+          font=\small, inner xsep=3pt, inner ysep=1.2pt] (p1) at (0,-0.06) {$LE_t$};
+    \node[draw=oiorange!95, fill=oiorange!16, rounded corners=2pt, line width=0.6pt,
+          font=\small, inner xsep=3pt, inner ysep=1.2pt] (p2) at (0,-0.40) {$NS_t$};
+    \node[draw=oigreen!95, fill=oigreen!16, rounded corners=2pt, line width=0.6pt,
+          font=\small, inner xsep=3pt, inner ysep=1.2pt] (p3) at (0,-0.74) {$RC_t$};
+    \node[sub] (u4c) at (0,-1.35) {\mbox{undefined components}\\\mbox{remain missing}};
+    \begin{pgfonlayer}{background}
+    \node[box=oigreen, fit=(h4)(u4a)(p1)(p2)(p3)(u4c), inner sep=4pt] (s4) {};
+    \end{pgfonlayer}
+  \end{scope}
+
+  \begin{scope}[shift={(17.03,0)}]
+    \node[head=oigray] (h5) at (0,0.62) {Downstream check};
+    \node[sub] (u5a) at (0,0.10)
+      {\mbox{LightGBM with}\\\mbox{isotonic calibration}};
+    \node[sub] (u5b) at (0,-0.62)
+      {\mbox{three-year uptake}\\\mbox{retrospective ranking}};
+    \begin{pgfonlayer}{background}
+    \node[box=oigray, fit=(h5)(u5a)(u5b), inner sep=4pt] (s5) {};
+    \end{pgfonlayer}
+  \end{scope}
+
+  % Short offsets keep arrowheads clear of box strokes without changing the source graph.
+  \draw[flow, shorten <=0.7pt, shorten >=0.7pt] (s1.east |- 0,-0.17) -- (s2.west |- 0,-0.17);
+  \draw[flow, shorten <=0.7pt, shorten >=0.7pt] (s2.east |- 0,-0.17) -- (s3.west |- 0,-0.17);
+  \draw[flow, shorten <=0.7pt, shorten >=0.7pt] (s3.east |- 0,-0.17) -- (s4.west |- 0,-0.17);
+  \draw[softflow, shorten <=0.7pt, shorten >=0.7pt] (s4.east |- 0,-0.17) -- (s5.west |- 0,-0.17);
+
+  \draw[dashed, line width=0.7pt, black!45] (15.15, 1.10) -- (15.15, 0.24);
+  \draw[dashed, line width=0.7pt, black!45] (15.15,-0.24) -- (15.15,-1.78);
+  \node[note, anchor=south west, text=black!62, font=\small] at (15.02,1.16) {stress test};
+
+  \draw[decorate, decoration={brace, amplitude=5pt}, line width=0.8pt, oiblue!70!black]
+    (0.18,1.16) -- (14.85,1.16);
+  \node[note, anchor=south] (a9) at (7.52,1.40)
+    {Measurement uses records dated at or before $t$ within a fixed snapshot};
+
+
+  \node[card=oiblue, anchor=north] (cle) at (3.05,-2.34)
+    {{\small\textbf{$LE_t$\, lexical emergence}}\\[1pt]
+     {\small $1-\cos$ to the \emph{nearest} prior}\\[1pt]
+     {\small vector for entering terms}};
+  \node[card=oiorange, anchor=north] (cns) at (9.40,-2.34)
+    {{\small\textbf{$NS_t$\, neighborhood shift}}\\[1pt]
+     {\small $1-\cos$ to the concept's \emph{own}}\\[1pt]
+     {\small prior vector for surviving terms}};
+  \node[card=oigreen, anchor=north] (crc) at (15.75,-2.34)
+    {{\small\textbf{$RC_t$\, recombination}}\\[1pt]
+     {\small $1-P_t(u,v)$, residualized}\\[1pt]
+     {\small on $Z_t=\log(\deg_t(u)\deg_t(v)+1)$}};
+
+  \draw[oigreen!70, line width=0.75pt, line cap=round, line join=round] (s4.south) -- (13.07,-2.02);
+  \draw[oigreen!70, line width=0.75pt, line cap=round, line join=round] (3.05,-2.02) -- (15.75,-2.02);
+  \draw[branch, shorten >=0.7pt] (3.05,-2.02) -- (cle.north);
+  \draw[branch, shorten >=0.7pt] (9.40,-2.02) -- (cns.north);
+  \draw[branch, shorten >=0.7pt] (15.75,-2.02) -- (crc.north);
+
+  \node[note, anchor=north, font=\small, text=oiblue!55!black] at ([yshift=-1pt]cle.south)
+    {feeds the forecaster};
+  \node[note, anchor=north, font=\small, text=oiorange!60!black] at ([yshift=-1pt]cns.south)
+    {measurement only};
+  \node[note, anchor=north, font=\small, text=oigreen!45!black] at ([yshift=-1pt]crc.south)
+    {forecast input for eligible pairs};
+
+  \end{tikzpicture}
+\end{document}

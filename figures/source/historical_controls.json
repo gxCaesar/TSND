@@ -1,0 +1,271 @@
+{
+  "surrogate": {
+    "rows": [
+      "RND",
+      "SemNovel",
+      "Yin",
+      "FastTextLOF",
+      "SemNovel ≤t",
+      "Yin ≤t",
+      "FastTextLOF ≤t",
+      "TSND surrogate"
+    ],
+    "columns": [
+      "A1 self",
+      "A2 paraphrase",
+      "A3 coverage",
+      "A7 older",
+      "A8 newer",
+      "A9 date"
+    ],
+    "pass_fractions": [
+      [
+        0.02,
+        0.02,
+        0.0,
+        0.27,
+        0.28,
+        0.55
+      ],
+      [
+        1.0,
+        1.0,
+        0.92,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.99,
+        0.99,
+        0.0,
+        0.83,
+        0.0,
+        0.69
+      ],
+      [
+        0.92,
+        0.85,
+        0.41,
+        0.41,
+        0.65,
+        0.0
+      ],
+      [
+        1.0,
+        1.0,
+        0.92,
+        0.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.99,
+        0.99,
+        0.0,
+        0.83,
+        0.0,
+        1.0
+      ],
+      [
+        0.92,
+        0.85,
+        0.41,
+        0.41,
+        0.66,
+        1.0
+      ],
+      [
+        1.0,
+        1.0,
+        0.84,
+        1.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "native_response": {
+    "labels": [
+      "Relabel",
+      "Pair",
+      "Drift"
+    ],
+    "means": [
+      0.7216666666666667,
+      0.9666666666666667,
+      1.0
+    ],
+    "seed_sd": [
+      0.03118047822311616,
+      0.004714045207910321,
+      0.0
+    ],
+    "primary_mean": 0.8961111111111112,
+    "strict_mean": 0.4888888888888889,
+    "dominance_mean": 0.8566666666666666
+  },
+  "individual": [
+    {
+      "label": "B1 control",
+      "family": "control",
+      "mean_ap": 0.3529022181855459
+    },
+    {
+      "label": "B2 degree",
+      "family": "structural",
+      "mean_ap": 0.4504777472722577
+    },
+    {
+      "label": "B3 TF-IDF",
+      "family": "semantic",
+      "mean_ap": 0.12887449373530888
+    },
+    {
+      "label": "B4 typicality",
+      "family": "semantic",
+      "mean_ap": 0.241983734275702
+    },
+    {
+      "label": "B5 SPECTER2",
+      "family": "semantic",
+      "mean_ap": 0.268687727614977
+    },
+    {
+      "label": "B6 static pair",
+      "family": "semantic",
+      "mean_ap": 0.10972747082867429
+    },
+    {
+      "label": "B7 adaptation",
+      "family": "structural",
+      "mean_ap": 0.4515808222306323
+    },
+    {
+      "label": "B8 adaptation",
+      "family": "structural",
+      "mean_ap": 0.49287434888266507
+    },
+    {
+      "label": "TSND block",
+      "family": "tsnd",
+      "mean_ap": 0.4183778857199174
+    }
+  ],
+  "increments": [
+    {
+      "label": "Onco graph-first",
+      "group": "B2+B7",
+      "increment": 0.0031778612849054032,
+      "seed_sd": 0.005262233869501582,
+      "n_seeds": 10,
+      "sd_divisor": 9
+    },
+    {
+      "label": "Onco adjacent",
+      "group": "B2+B7",
+      "increment": 0.016095341581784738,
+      "seed_sd": 0.0026208083545999888,
+      "n_seeds": 10,
+      "sd_divisor": 9
+    },
+    {
+      "label": "Generic",
+      "group": "B2+B7",
+      "increment": 0.010950263944254931,
+      "seed_sd": 0.0003875079364360046,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "Cardiology",
+      "group": "B2+B7",
+      "increment": 0.029491282296604138,
+      "seed_sd": 0.001374006301557981,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "Generic",
+      "group": "B2+B7+B8",
+      "increment": 0.002708304940727657,
+      "seed_sd": 0.0009817815141495408,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "Oncology",
+      "group": "B2+B7+B8",
+      "increment": -0.0012938659277257718,
+      "seed_sd": 0.0012333349880556468,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "Cardiology",
+      "group": "B2+B7+B8",
+      "increment": 0.008767884213759661,
+      "seed_sd": 0.001819707229763704,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    }
+  ],
+  "robustness": [
+    {
+      "label": "2013",
+      "group": "Test year",
+      "increment": 0.01636094299434347,
+      "seed_sd": 0.00126725323982874,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "2014",
+      "group": "Test year",
+      "increment": 0.021937649084674937,
+      "seed_sd": 0.0038148891511977064,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "2015",
+      "group": "Test year",
+      "increment": 0.015433756476785021,
+      "seed_sd": 0.0028994233556736454,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "2016",
+      "group": "Test year",
+      "increment": 0.01915331587043227,
+      "seed_sd": 0.004322468470937743,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "Full",
+      "group": "Feature block",
+      "increment": 0.01915331587043227,
+      "seed_sd": 0.004322468470937743,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "Without LE",
+      "group": "Feature block",
+      "increment": 0.01717919046831475,
+      "seed_sd": 0.0020367723762409933,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    },
+    {
+      "label": "Without RC+P",
+      "group": "Feature block",
+      "increment": 0.0010556123067369156,
+      "seed_sd": 0.0017442067496266371,
+      "n_seeds": 3,
+      "sd_divisor": 3
+    }
+  ]
+}

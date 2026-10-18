@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tsnd"
-version = "0.1.1"
+version = "0.1.2"
 description = "Temporal semantic novelty decomposition research package."
 readme = "README.md"
 requires-python = ">=3.11"

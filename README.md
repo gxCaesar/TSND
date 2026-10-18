@@ -70,16 +70,19 @@ The October reference is a separate acquisition, not an uncapped reconstruction 
 
 ### Dated study inputs
 
-The exact retained records and saved predictions are prepared in the separate article data
-attachment, Online Resource 1 (`ESM_1.zip`, 610.679 MB). A public download URL for this
-archive has not yet been assigned. Use the article's supplementary-data link when available.
-The code repository does not contain the bulk corpus or prediction arrays.
+The exact retained records, saved predictions and analysis source data are archived on
+[Zenodo (dataset version 1.0.0)](https://doi.org/10.5281/zenodo.23456120).
+Download `tsnd-data-v1.0.0.zip` (610.680 MB) from that record. The dataset README explains
+its contents, dictionaries, display mapping and saved-value replay. Author-generated data
+and documentation use CC BY 4.0; original OpenAlex metadata retain CC0. The research code
+in this repository remains MIT-licensed. Bulk corpus and prediction arrays are hosted
+on Zenodo, separately from this code repository.
 
 After obtaining the archive, extract it:
 
 ```bash
 mkdir -p data/frozen
-unzip /path/to/ESM_1.zip -d data/frozen
+unzip /path/to/tsnd-data-v1.0.0.zip -d data/frozen
 ```
 
 The archive contains:
